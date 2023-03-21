@@ -1,33 +1,71 @@
-import React, { FormEvent, useState, FC, useEffect } from "react";
+import React, { FormEvent, useState, FC, useEffect, useReducer } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
-import { setTimeout } from "timers/promises";
+
+enum EmailActionType {
+  "USER_INPUT",
+  "INPUT_BLUR",
+}
+
+interface IEmailState {
+  value: string;
+  isValid: boolean;
+}
+interface INewState {
+  type: EmailActionType;
+  val: string | null;
+}
+
+const InitialState: IEmailState = {
+  value: "",
+  isValid: false,
+};
+
+const emailReducer = (state: IEmailState, action: INewState): IEmailState => {
+  switch (action.type) {
+    case EmailActionType.USER_INPUT:
+      return { value: action.val!, isValid: action.val!.includes("@") };
+
+    case EmailActionType.INPUT_BLUR:
+      return { value: state.value, isValid: state.value.includes("@") };
+
+    default:
+      return state;
+  }
+};
 
 export type LoginProps = {
   onLogin: (enteredEmail: string, enteredPassword: string) => void;
 };
 const Login: FC<LoginProps> = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState<string>("");
-  const [emailIsValid, setEmailIsValid] = useState<boolean>();
+  // const [enteredEmail, setEnteredEmail] = useState<string>("");
+  // const [emailIsValid, setEmailIsValid] = useState<boolean>();
   const [enteredPassword, setEnteredPassword] = useState<string>("");
   const [passwordIsValid, setPasswordIsValid] = useState<boolean>();
   const [formIsValid, setFormIsValid] = useState<boolean>(false);
 
-  useEffect(() => {
-    const timerHandler = window.setTimeout(() => {
-      setFormIsValid(
-        enteredEmail.includes("@") && enteredPassword.trim().length > 6
-      );
-    }, 500);
-    return () => {
-      window.clearTimeout(timerHandler);
-    };
-  }, [enteredEmail, enteredPassword]);
+  const [emailState, dispatchEmail] = useReducer(emailReducer, InitialState);
+
+  // useEffect(() => {
+  //   const timerHandler = window.setTimeout(() => {
+  //     setFormIsValid(
+  //       enteredEmail.includes("@") && enteredPassword.trim().length > 6
+  //     );
+  //   }, 500);
+  //   return () => {
+  //     window.clearTimeout(timerHandler);
+  //   };
+  // }, [enteredEmail, enteredPassword]);
 
   const emailChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEnteredEmail(event.target.value);
+    console.log(`${event.target.value}`);
+    dispatchEmail({
+      type: EmailActionType.USER_INPUT,
+      val: event.target.value,
+    });
+    // setEnteredEmail(event.target.value);
   };
 
   const passwordChangeHandler = (
@@ -35,13 +73,12 @@ const Login: FC<LoginProps> = (props) => {
   ) => {
     setEnteredPassword(event.target.value);
 
-    setFormIsValid(
-      event.target.value.trim().length > 6 && enteredEmail.includes("@")
-    );
+    setFormIsValid(emailState.value.trim().length > 6 && emailState.isValid);
   };
 
   const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes("@"));
+    dispatchEmail({ type: EmailActionType.INPUT_BLUR, val: null });
+    // setEmailIsValid(emailState.isValid);
   };
 
   const validatePasswordHandler = () => {
@@ -51,7 +88,7 @@ const Login: FC<LoginProps> = (props) => {
   const submitHandler = (event: FormEvent) => {
     event.preventDefault();
     console.log("submit handler");
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(emailState.value, enteredPassword);
   };
 
   return (
@@ -59,14 +96,14 @@ const Login: FC<LoginProps> = (props) => {
       <form onSubmit={submitHandler}>
         <div
           className={`${classes.control} ${
-            emailIsValid === false ? classes.invalid : ""
+            emailState.isValid ? classes.invalid : ""
           }`}
         >
           <label htmlFor="email">E-Mail</label>
           <input
             type="email"
             id="email"
-            value={enteredEmail}
+            value={emailState.value}
             onChange={emailChangeHandler}
             onBlur={validateEmailHandler}
           />
