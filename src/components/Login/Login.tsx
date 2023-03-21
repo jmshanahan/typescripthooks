@@ -1,8 +1,9 @@
-import React, { FormEvent, useState, FC } from "react";
+import React, { FormEvent, useState, FC, useEffect } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import { setTimeout } from "timers/promises";
 
 export type LoginProps = {
   onLogin: (enteredEmail: string, enteredPassword: string) => void;
@@ -14,12 +15,19 @@ const Login: FC<LoginProps> = (props) => {
   const [passwordIsValid, setPasswordIsValid] = useState<boolean>();
   const [formIsValid, setFormIsValid] = useState<boolean>(false);
 
+  useEffect(() => {
+    const timerHandler = window.setTimeout(() => {
+      setFormIsValid(
+        enteredEmail.includes("@") && enteredPassword.trim().length > 6
+      );
+    }, 500);
+    return () => {
+      window.clearTimeout(timerHandler);
+    };
+  }, [enteredEmail, enteredPassword]);
+
   const emailChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEnteredEmail(event.target.value);
-
-    setFormIsValid(
-      event.target.value.includes("@") && enteredPassword.trim().length > 6
-    );
   };
 
   const passwordChangeHandler = (
@@ -42,6 +50,7 @@ const Login: FC<LoginProps> = (props) => {
 
   const submitHandler = (event: FormEvent) => {
     event.preventDefault();
+    console.log("submit handler");
     props.onLogin(enteredEmail, enteredPassword);
   };
 
