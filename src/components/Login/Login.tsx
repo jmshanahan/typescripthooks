@@ -1,8 +1,16 @@
-import React, { FormEvent, useState, FC, useEffect, useReducer } from "react";
+import React, {
+  FormEvent,
+  useState,
+  FC,
+  useEffect,
+  useReducer,
+  useContext,
+} from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import AuthContext from "../../store/auth-context";
 
 enum ActionType {
   "USER_INPUT",
@@ -65,7 +73,7 @@ const passwordReducer = (
 export type LoginProps = {
   onLogin: (enteredEmail: string, enteredPassword: string) => void;
 };
-const Login: FC<LoginProps> = (props) => {
+const Login: FC = () => {
   const [formIsValid, setFormIsValid] = useState<boolean>(false);
 
   const [emailState, dispatchEmail] = useReducer(
@@ -76,6 +84,7 @@ const Login: FC<LoginProps> = (props) => {
     passwordReducer,
     InitialPasswordState
   );
+  const ctx = useContext(AuthContext);
   useEffect(() => {
     const timerHandler = window.setTimeout(() => {
       setFormIsValid(
@@ -126,7 +135,7 @@ const Login: FC<LoginProps> = (props) => {
   const submitHandler = (event: FormEvent) => {
     event.preventDefault();
     console.log("submit handler");
-    props.onLogin(emailState.value, passwordState.value);
+    ctx.onLogin(emailState.value, passwordState.value);
   };
 
   return (

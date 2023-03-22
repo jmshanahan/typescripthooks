@@ -1,29 +1,29 @@
-import React, { FC } from "react";
+import React, { FC, useContext } from "react";
 
 import classes from "./Navigation.module.css";
+import AuthContext from "../../store/auth-context";
+// interface Props {
+//   onLogout: () => void;
+// }
 
-interface Props {
-  isLoggedIn: Boolean;
-  onLogout: () => void;
-}
-
-const Navigation: FC<Props> = (props) => {
+const Navigation: FC = () => {
+  const ctx = useContext(AuthContext);
   return (
     <nav className={classes.nav}>
       <ul>
-        {props.isLoggedIn && (
+        {ctx.isLoggedIn && (
           <li>
             <a href="/">Users</a>
           </li>
         )}
-        {props.isLoggedIn && (
+        {ctx.isLoggedIn && (
           <li>
             <a href="/">Admin</a>
           </li>
         )}
-        {props.isLoggedIn && (
+        {ctx.isLoggedIn && (
           <li>
-            <button onClick={props.onLogout}>Logout</button>
+            <button onClick={ctx.onLogout}>Logout</button>
           </li>
         )}
       </ul>
